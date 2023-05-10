@@ -16,16 +16,8 @@ const db = require("../../data/db-config");
     2A- When you have a grasp on the query go ahead and build it in Knex.
     Return from this function the resulting dataset.
   */
-function find() {
-  return db("schemes as sc")
-    .count("st.step_id", { as: "number_of_steps" })
-    .select("sc.*")
-    .leftJoin("steps as st", "sc.scheme_id", "=", "st.scheme_id")
-    .groupBy("sc.scheme_id")
-    .orderBy("sc.scheme_id", "asc");
-}
 
-/*  // EXERCISE B
+    /*  // EXERCISE B
     1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
 
       SELECT
@@ -91,6 +83,15 @@ function find() {
       }
   */
 
+function find() {
+  return db("schemes as sc")
+    .count("st.step_id", { as: "number_of_steps" })
+    .select("sc.*")
+    .leftJoin("steps as st", "sc.scheme_id", "=", "st.scheme_id")
+    .groupBy("sc.scheme_id")
+    .orderBy("sc.scheme_id", "asc");
+}
+
 async function findById(scheme_id) {
   const rows = await db("schemes as sc")
     .where("sc.scheme_id", scheme_id)
@@ -118,7 +119,7 @@ async function findById(scheme_id) {
   return result;
 }
 
-function findSteps(scheme_id) {
+async function findSteps(scheme_id) {
   // EXERCISE C
   /*
     1C- Build a query in Knex that returns the following data.
@@ -140,6 +141,14 @@ function findSteps(scheme_id) {
         }
       ]
   */
+ const rows = await db('schemes as sc')
+      .leftJoin('steps as st', 'sc.scheme_id', 'st.scheme_id')
+      .where('sc.scheme_id', scheme_id)
+      .select('step_id', 'step_number', 'instructions', 'sc.scheme_name')
+      .orderBy('step_number', 'asc')
+
+  if (!rows[0].step_id) return [];
+  return rows;
 }
 
 function add(scheme) {
